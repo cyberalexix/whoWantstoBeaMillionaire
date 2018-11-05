@@ -1,36 +1,61 @@
 import sys
 import telebot
+import sqlite3
 from telebot import types
 
-BOT_TOKEN = 'BOT_TOKEN_HERE'
+user_scores = {}
+true = ""
+scores = [0, 100, 200, 300, 500, 1000, 2000, 4000, 6000, 16000, 32000, 64000, 125000, 250000, 500000, 1000000]
 
-if(!BOT_TOKEN) {
+BOT_TOKEN = 'BOT_TOKEN'
+
+if(not BOT_TOKEN):
 	sys.exit('Bot token not found')
-}
+
+db = sqlite3.connect("questions.db", check_same_thread=False)
+cursor = db.cursor()
 
 bot = telebot.TeleBot(BOT_TOKEN)
 @bot.message_handler(commands=['start'])
-def send_welcome(message):
-    bot.reply_to(message, "Привет, " + message.from_user.username)
-    bot.send_message(message.chat.id, "Кто убил Пушкина?")
+def start_game(message):
+    bot.reply_to(message, "Привіт, " + message.from_user.username + ". Починаємо гру!")
+    user_scores[message.from_user.username] = 0
+    new_question(message)
+
+def new_question(message):
+    cursor.execute("SELECT * FROM questions WHERE rowid=random() LIMIT 4")
+    question = cursor.fetchone()
+    true = question[1]
+    bot.send_message(message.chat.id, question[0])
     markup = types.ReplyKeyboardMarkup()
-    itembtna = types.KeyboardButton('Дантес')
-    itembtnv = types.KeyboardButton('Д\'Артаньян')
-    itembtnc = types.KeyboardButton('Дерипаска')
-    itembtnd = types.KeyboardButton('Дункерк')
+    itembtna = types.KeyboardButton(question[1])
+    itembtnv = types.KeyboardButton(question[2])
+    itembtnc = types.KeyboardButton(question[3])
+    itembtnd = types.KeyboardButton(question[4])
     itembtne = types.KeyboardButton('Подсказка')
     markup.row(itembtna, itembtnv)
     markup.row(itembtnc, itembtnd)
     markup.row(itembtne)
-    bot.send_message(message.chat.id, "Ваш ответ: ", reply_markup=markup)
+    msg = bot.send_message(message.chat.id, "Ваша відповідь: ", reply_markup=markup)
+    bot.register_next_step_handler(msg, check)
 
+def check(message):
+    if(message.from_user.username not in user_scores):
+        msg = bot.reply_to(message, "Ви не граєте, помовчіть!")
+        bot.register_next_step_handler(msg, check)
+    elif(message.text == true):
+        if(user_scores[message.from_user.username] != 15):
+            user_scores[message.from_user.username] += 1
+            bot.send_message(message.chat.id, "Гарна робота! У вас тепер " + scores(user_scores[message.from_user.username]) + " гривень!")
+            new_question()
+        else:
+            bot.send_message(message.chat.id, "Вітаю Вас, " + message.from_user.username + "! Ви відповіли на всі 15 запитань!")
+    else:
+        bot.send_message(message.chat.id, "Вы програли!")
     markup = types.ReplyKeyboardRemove(selective=False)
-    bot.send_message(message.chat.id, message, reply_markup=markup)
-'''
-@bot.message_handler(func=lambda message: True)
-def echo_all(message):
-	bot.reply_to(message, message.from_user.username)
-'''
+    bot.send_message(message.chat.id, "Гра завершена!", reply_markup=markup)
+    user_scores.pop(message.from_user.username)
+    
 bot.enable_save_next_step_handlers(delay=2)
 
 bot.load_next_step_handlers()
