@@ -7,7 +7,8 @@ user_scores = {}
 true = ""
 scores = [0, 100, 200, 300, 500, 1000, 2000, 4000, 6000, 16000, 32000, 64000, 125000, 250000, 500000, 1000000]
 
-BOT_TOKEN = '662251700:AAGYdnsh6O1TLMWlRK0tSfwt49-nUva00Gg'
+BOT_TOKEN = 'BOT_TOKEN'
+
 
 if(not BOT_TOKEN):
 	sys.exit('Bot token not found')
