@@ -7,7 +7,7 @@ user_scores = {}
 true = ""
 scores = [0, 100, 200, 300, 500, 1000, 2000, 4000, 6000, 16000, 32000, 64000, 125000, 250000, 500000, 1000000]
 
-BOT_TOKEN = 'BOT_TOKEN'
+BOT_TOKEN = '662251700:AAGYdnsh6O1TLMWlRK0tSfwt49-nUva00Gg'
 
 if(not BOT_TOKEN):
 	sys.exit('Bot token not found')
@@ -23,8 +23,9 @@ def start_game(message):
     new_question(message)
 
 def new_question(message):
-    cursor.execute("SELECT * FROM questions WHERE rowid=random() LIMIT 4")
+    cursor.execute("SELECT * FROM questions WHERE rowid=1")
     question = cursor.fetchone()
+    global true
     true = question[1]
     bot.send_message(message.chat.id, question[0])
     markup = types.ReplyKeyboardMarkup()
@@ -41,13 +42,13 @@ def new_question(message):
 
 def check(message):
     if(message.from_user.username not in user_scores):
-        msg = bot.reply_to(message, "Ви не граєте, помовчіть!")
+        msg = bot.reply_to(message, "Ви не граєте!")
         bot.register_next_step_handler(msg, check)
     elif(message.text == true):
         if(user_scores[message.from_user.username] != 15):
             user_scores[message.from_user.username] += 1
-            bot.send_message(message.chat.id, "Гарна робота! У вас тепер " + scores(user_scores[message.from_user.username]) + " гривень!")
-            new_question()
+            bot.send_message(message.chat.id, "Гарна робота! У вас тепер " + str(scores[user_scores[message.from_user.username]]) + " гривень!")
+            new_question(message)
         else:
             bot.send_message(message.chat.id, "Вітаю Вас, " + message.from_user.username + "! Ви відповіли на всі 15 запитань!")
     else:
