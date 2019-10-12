@@ -20,7 +20,7 @@ def add_log(msg):
 bot = telebot.TeleBot(BOT_TOKEN)
 @bot.message_handler(commands=['start'])
 def start(message):
-    if(message.from_user.username.lower() not in ["alexix1234", "overlordgato"]):
+    if(message.from_user.username.lower() not in ["alexix1234"]):
         bot.send_message(message.chat.id, "Вы не являетесь авторизированным пользователем")
         add_log("User " + message.from_user.username + " tried to add a question!")
         return
